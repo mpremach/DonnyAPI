@@ -45,7 +45,8 @@ AVAILABLE_TOOLS = {
     'get_current_time': get_current_time,
     'get_current_track': get_current_track,
     'get_user_top_artists': get_user_top_artists,
-    'get_weather': get_weather
+    'get_weather': get_weather,
+    'get_system_health': get_system_health
     
 }
 
