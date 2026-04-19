@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import ollama
 
 # TOOLS IMPORT
-from app.tools.system_tools import get_current_time, get_system_health
+from app.tools.system_tools import get_current_time, get_system_health, run_speedtest
 from app.tools.spotify_tools import get_current_track, get_user_top_artists
 from app.tools.weather_tools import get_weather
 
@@ -46,7 +46,8 @@ AVAILABLE_TOOLS = {
     'get_current_track': get_current_track,
     'get_user_top_artists': get_user_top_artists,
     'get_weather': get_weather,
-    'get_system_health': get_system_health
+    'get_system_health': get_system_health,
+    'run_speedtest': run_speedtest
     
 }
 
@@ -106,3 +107,4 @@ async def donny_prompt(request: ChatRequest):
 @app.get("/")
 async def system_check():
     return {"status": "Donny API is online."}
+

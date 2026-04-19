@@ -1,5 +1,6 @@
 import datetime
 import psutil
+import speedtest
 
 # GET CURRENT TIME
 def get_current_time():
@@ -33,4 +34,27 @@ def get_system_health():
         }
     except Exception as e:
         return f"Sir, I am unable to read the system sensors: {str(e)}"
+    
+
+# GET INTERNET SPEED
+def run_speedtest():
+    """
+    REQUIRED TOOL for checking internet speed.
+    Call this tool whenever the user asks about ping, download speed, upload speed, or connection status.
+    Do NOT use any other tool for internet checks.
+    """
+    try:
+        st = speedtest.Speedtest()
+        st.get_best_server()
+        download_speed = st.download() / 1_000_000  # Convert to Mbps
+        upload_speed = st.upload() / 1_000_000  # Convert to Mbps
+        ping = st.results.ping
+        return {
+            "status": "online",
+            "download_speed": round(download_speed, 2),
+            "upload_speed": round(upload_speed, 2),
+            "ping_ms": ping
+        }
+    except Exception as e:
+        return f"Sir, I am unable to check the internet speed: {str(e)}"
 

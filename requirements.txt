@@ -6,3 +6,4 @@ python-dotenv
 spotipy
 requests
 psutil
+speedtest-cli
