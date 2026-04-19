@@ -3,8 +3,9 @@ from pydantic import BaseModel
 import ollama
 
 # TOOLS IMPORT
-from app.tools.system_tools import get_current_time, get_weather
+from app.tools.system_tools import get_current_time
 from app.tools.spotify_tools import get_current_track, get_user_top_artists
+from app.tools.weather_tools import get_weather
 
 DONNY_SYSTEM_PROMPT = """
 IDENTITY:
