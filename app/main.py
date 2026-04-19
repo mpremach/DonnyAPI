@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import ollama
 
 # TOOLS IMPORT
-from app.tools.system_tools import get_current_time
+from app.tools.system_tools import get_current_time, get_system_health
 from app.tools.spotify_tools import get_current_track, get_user_top_artists
 from app.tools.weather_tools import get_weather
 
@@ -33,6 +33,7 @@ STRICT BEHAVIORAL RULES:
 6. TOOL RESTRICTION: If a tool is not explicitly listed in your toolbox, you MUST NOT attempt to call it. Instead, inform the user you lack the specific memory/info tool required.
 7. NO UNSOLICITED EXPLANATIONS: Do not explain the science or logic behind your answers unless explicitly asked. If you cannot provide a direct, real-time answer via a tool, state your limitation and stop talking.
 8. GENERAL KNOWLEDGE: For common sense, creative descriptions, or general facts (e.g., the color of grass, the definition of a word), rely on your internal training. ONLY use tools for real-time, user-specific, or system-level data.
+9. STRICT DATA ADHERENCE: When reporting data from tools (especially system health or hardware stats), ONLY report the exact metrics provided in the tool's JSON payload. DO NOT invent, assume, or hallucinate additional metrics like internet status, OS build numbers, updates, or antivirus activity. If a metric is not in the JSON, you do not know it.
 """
 app = FastAPI(title="Donny Core API")
 

@@ -29,6 +29,10 @@ def get_current_track():
     return "Sir, no music is currently detected."
 
 def get_user_top_artists():
+    """
+    Fetches the user's most listened to music artists from Spotify. 
+    Use this strictly to answer questions regarding the user's music taste, favorite bands, or listening history.
+    """
     try:
         results = sp.current_user_top_artists(limit=5, time_range='short_term')
         if not results['items']:
