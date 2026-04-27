@@ -7,6 +7,8 @@ def get_current_time():
     """Returns the current date and exact time."""
     return datetime.datetime.now().strftime("%A, %B %d, %Y at %I:%M:%S %p")
 
+
+
 # GET SYSTEM USAGE
 def get_system_health():
     """
@@ -35,6 +37,7 @@ def get_system_health():
     except Exception as e:
         return f"Sir, I am unable to read the system sensors: {str(e)}"
     
+
 
 # GET INTERNET SPEED
 def run_speedtest():

@@ -2,3 +2,7 @@
 .cache
 __pycache__/
 .env
+reply.wav
+piper/
+*.onnx
+*.onnx.json

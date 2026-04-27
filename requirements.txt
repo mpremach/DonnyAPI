@@ -7,3 +7,7 @@ spotipy
 requests
 psutil
 speedtest-cli
+speechrecognition 
+openai-whisper 
+soundfile
+pyaudio

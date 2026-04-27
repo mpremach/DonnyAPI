@@ -20,7 +20,7 @@ TONE & PERSONALITY:
 
 TOOL PROTOCOL:
 1. DYNAMIC SCANNING: You are provided with a dynamic list of tools. Each tool has a unique name and description. You MUST scan this list for every single request.
-2. MANDATORY EXECUTION: Use a tool ONLY for data you cannot know (current time, local files, web searches, specific user records, real time data, etc.).
+2. MANDATORY EXECUTION: Use a tool ONLY for data you cannot know (current time, local files, web searches, specific user records, real time data, weather etc.).
 3. SILENT OPERATION: NEVER announce that you are using a tool or "checking" something. Execute the tool in the background and weave the results naturally into your response as your own knowledge.
 4. ARGUMENT EXTRACTION: Extract all required parameters and variables accurately from the user's request to fulfill tool calls.
 
@@ -62,18 +62,21 @@ async def donny_prompt(request: ChatRequest):
 
         # Ask AI if it needs a tool
         response = ollama.chat(
-            model='llama3.2',
+            model='llama3.2',       # Model
             messages=chat_history,
-            tools=list(AVAILABLE_TOOLS.values()) 
+            tools=list(AVAILABLE_TOOLS.values()),
+            options = {'temperature': 0.73}
         )
 
         # Handle Tool Calls
         if response['message'].get('tool_calls'):
             # Add Donny's "intent to use a tool" to history
             chat_history.append(response['message']) 
+     #DEBUG:print(f"DEBUG RAW JSON: {response['message']['tool_calls']}") 
             
             for tool in response['message']['tool_calls']:
                 func_name = tool['function']['name']
+                print("Debug: AI wants to use tool:", func_name)
                 
                 if func_name in AVAILABLE_TOOLS:
                     # Run the tool

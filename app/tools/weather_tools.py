@@ -1,7 +1,5 @@
 import requests
 
-##NEEDS WORK, NOT USING TOOL
-
 # WMO Weather codes
 WEATHER_CODES = {
     0: "Clear sky",
@@ -16,26 +14,46 @@ WEATHER_CODES = {
     95: "Thunderstorm", 96: "Thunderstorm with slight hail", 99: "Thunderstorm with heavy hail"
 }
 
-def get_weather(lat: float = 35.31, lon: float = -80.72):
+def get_weather(location_name: str):
     """
     Fetches real-time weather data for a specific location.
+    If the user asks about the weather, ALWAYS use this tool ONLY. Do NOT attempt to answer weather questions without it.
+    If the user specifies a location, ONLY search the weather for that location, Do NOT search for the weather in any other location including the default.
     If the user doesn't specify a location, 
-    use the default coordinates for Charlotte, NC (35.2271, -80.8431).
+    use the default coordinates for Charlotte, NC
     """
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&temperature_unit=fahrenheit"
+
+    # Clean data provided from ollama and input as string
+    if isinstance(location_name, dict):
+        location_name = location_name.get('value', '')
+    location_name = str(location_name).split(',')[0].strip()
+    
+    if not location_name or location_name == "None":
+        location_name = "Charlotte"
     
     try:
-        response = requests.get(url)
+        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={location_name}&count=1&language=en&format=json"
+        geo_data = requests.get(geo_url).json()
+
+        if not geo_data.get('results'):
+            return f"Sir, I couldn't find {location_name} in the database."
+
+        lat = geo_data['results'][0]['latitude']
+        lon = geo_data['results'][0]['longitude']
+
+        weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&temperature_unit=fahrenheit"
+        print("Getting weather for location:", location_name)
+        response = requests.get(weather_url)
         response.raise_for_status()
         data = response.json()
-        
+
         current = data['current_weather']
         code = current['weathercode']
         
         condition = WEATHER_CODES.get(code, "Unknown conditions")
         
         return {
-            "location": "Charlotte, NC",
+            "location": location_name,
             "temperature": f"{current['temperature']}°F",
             "condition": condition,
             "wind_speed": f"{current['windspeed']} mph"
