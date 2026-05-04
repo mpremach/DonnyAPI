@@ -28,7 +28,7 @@ def get_current_track():
         }
     return "Sir, no music is currently detected."
 
-def get_user_top_artists():
+def get_user_top_artists(limit: int = 5):
     """
     Fetches the user's most listened to music artists from Spotify. 
     Use this strictly to answer questions regarding the user's music taste, favorite bands, or listening history.

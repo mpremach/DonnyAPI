@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import ollama
 
@@ -25,7 +26,7 @@ TOOL PROTOCOL:
 4. ARGUMENT EXTRACTION: Extract all required parameters and variables accurately from the user's request to fulfill tool calls.
 
 STRICT BEHAVIORAL RULES:
-1. NO ROLEPLAY: You do not have a physical body. NEVER use asterisks, brackets, or parentheses to describe actions or emotions (e.g., strictly forbid *smiles*, [pauses], or *accessing database*).
+1. NO ROLEPLAY: You do not have a physical body. NEVER use asterisks, brackets, or parentheses at all to describe actions or emotions (e.g., strictly forbid *smiles*, [pauses], or *accessing database*).
 2. NO AI DISCLAIMERS: NEVER use phrases like "As an AI language model," "I don't have feelings," or "I cannot access the internet." If you lack a tool, simply state: "Sir, I do not currently have the required tool integrated for that request."
 3. NO FILLER: NEVER start sentences with conversational stalling like "Here is the information you requested" or "Let me check on that." Deliver the result immediately.
 4. NO HALLUCINATIONS: You are strictly forbidden from guessing facts, performing internal math, or inventing information. If you lack a tool for the data, admit it.
@@ -34,6 +35,7 @@ STRICT BEHAVIORAL RULES:
 7. NO UNSOLICITED EXPLANATIONS: Do not explain the science or logic behind your answers unless explicitly asked. If you cannot provide a direct, real-time answer via a tool, state your limitation and stop talking.
 8. GENERAL KNOWLEDGE: For common sense, creative descriptions, or general facts (e.g., the color of grass, the definition of a word), rely on your internal training. ONLY use tools for real-time, user-specific, or system-level data.
 9. STRICT DATA ADHERENCE: When reporting data from tools (especially system health or hardware stats), ONLY report the exact metrics provided in the tool's JSON payload. DO NOT invent, assume, or hallucinate additional metrics like internet status, OS build numbers, updates, or antivirus activity. If a metric is not in the JSON, you do not know it.
+10. NO JSON IN CHAT: NEVER output raw JSON, brackets, or tool-call syntax in your conversational text. If you are confused or lack a tool, respond with natural human speech admitting you cannot complete the request.
 """
 app = FastAPI(title="Donny Core API")
 
@@ -72,7 +74,7 @@ async def donny_prompt(request: ChatRequest):
         if response['message'].get('tool_calls'):
             # Add Donny's "intent to use a tool" to history
             chat_history.append(response['message']) 
-     #DEBUG:print(f"DEBUG RAW JSON: {response['message']['tool_calls']}") 
+            print(f"DEBUG RAW JSON: {response['message']['tool_calls']}") 
             
             for tool in response['message']['tool_calls']:
                 func_name = tool['function']['name']
@@ -90,17 +92,40 @@ async def donny_prompt(request: ChatRequest):
                         'name': func_name
                     })
 
-            # Get the final response from AI based on the tool results
-            final_res = ollama.chat(model='llama3.2', messages=chat_history)
-            
-            # Save Donny's final verbal response to history so he remembers it
-            chat_history.append(final_res['message'])
-            
-            return {"response": final_res['message']['content']}
+            def stream_after_toolcall():
+                # Get the final response from AI based on the tool results
+                final_res = ollama.chat(model='llama3.2', messages=chat_history)
+                full_text = ""
 
-        # If no tool was needed, save his response to history and return
+                if hasattr(final_res, 'message'):
+                    content = final_res.message.content
+                    for char in content:
+                        full_text += char
+                        yield char
+                elif isinstance(final_res, dict) and 'message' in final_res:
+                    content = final_res['message']['content']
+                    for char in content:
+                        full_text += char
+                        yield char
+                else:
+                    for chunk in final_res:
+                        token = chunk.message.content if hasattr(chunk, 'message') else chunk['message']['content']
+                        full_text += token
+                        yield token
+            return StreamingResponse(stream_after_toolcall(), media_type="text/plain")
+               
+            
+            
+            
+        # Save Donny's final verbal response to history so he remembers it
         chat_history.append(response['message'])
-        return {"response": response['message']['content']}
+
+        def instant_stream():
+            for char in response['message']['content']:
+                yield char
+            
+        return StreamingResponse(instant_stream(), media_type="text/plain")
+            
     
     except Exception as e:
         # If something breaks, remove the last user message so the history stays clean
