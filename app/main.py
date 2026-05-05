@@ -1,7 +1,10 @@
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import ollama
+from dotenv import load_dotenv
 
 # TOOLS IMPORT
 from app.tools.system_tools import get_current_time, get_system_health, run_speedtest
@@ -21,7 +24,7 @@ TONE & PERSONALITY:
 
 TOOL PROTOCOL:
 1. DYNAMIC SCANNING: You are provided with a dynamic list of tools. Each tool has a unique name and description. You MUST scan this list for every single request, but you may not always need to use a tool.
-2. MANDATORY EXECUTION: Use a tool ONLY for data you cannot know (current time, local files, web searches, specific user records, real time data, weather etc.).
+2. MANDATORY EXECUTION: Use a tool ONLY for data you cannot know (current time, local files, web searches, specific user records, real time data, weather etc.) If a tool is used you MUST provide the results.
 3. SILENT OPERATION: NEVER announce that you are using a tool or "checking" something. Execute the tool in the background and weave the results naturally into your response as your own knowledge.
 4. ARGUMENT EXTRACTION: Extract all required parameters and variables accurately from the user's request to fulfill tool calls.
 
@@ -35,9 +38,11 @@ STRICT BEHAVIORAL RULES:
 7. NO UNSOLICITED EXPLANATIONS: Do not explain the science or logic behind your answers unless explicitly asked. If you cannot provide a direct, real-time answer via a tool, state your limitation and stop talking.
 8. GENERAL KNOWLEDGE: For common sense, creative descriptions, or general facts (e.g., the color of grass, the definition of a word), rely on your internal training. ONLY use tools for real-time, user-specific, or system-level data.
 9. STRICT DATA ADHERENCE: When reporting data from tools (especially system health or hardware stats), ONLY report the exact metrics provided in the tool's JSON payload. DO NOT invent, assume, or hallucinate additional metrics like internet status, OS build numbers, updates, or antivirus activity. If a metric is not in the JSON, you do not know it.
-10. NO JSON IN CHAT: NEVER output raw JSON, brackets, or tool-call syntax in your conversational text. If you are confused or lack a tool, respond with natural human speech admitting you cannot complete the request.
+10. NO JSON IN CHAT: You are strictly forbidden from outputting raw JSON, brackets {}, or function names directly to the user. If you need a tool, you MUST use the internal tool-calling API silently. Do not type out the tool call.
 """
 app = FastAPI(title="Donny Core API")
+load_dotenv()  # Load environment variables from .env file
+DONNY_BRAIN = os.getenv("DONNY_MODEL")
 
 class ChatRequest(BaseModel):
     message: str
@@ -64,10 +69,10 @@ async def donny_prompt(request: ChatRequest):
 
         # Ask AI if it needs a tool
         response = ollama.chat(
-            model='llama3.2',       # Model
+            model=DONNY_BRAIN,       # Model
             messages=chat_history,
             tools=list(AVAILABLE_TOOLS.values()),
-            options = {'temperature': 0.73}
+            options = {'temperature': 0.63}
         )
 
         # Handle Tool Calls
@@ -94,7 +99,7 @@ async def donny_prompt(request: ChatRequest):
 
             def stream_after_toolcall():
                 # Get the final response from AI based on the tool results
-                final_res = ollama.chat(model='llama3.2', messages=chat_history)
+                final_res = ollama.chat(model=DONNY_BRAIN, messages=chat_history)
                 full_text = ""
 
                 if hasattr(final_res, 'message'):

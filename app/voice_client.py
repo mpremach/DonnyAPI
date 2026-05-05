@@ -22,6 +22,7 @@ current_request_id = 0
 def listen(recognizer, microphone, timeout=None, phrase_time_limit=None, show_text=False):
     """Listen for audio and convert its through default windows microphone"""
     with microphone as source:
+        recognizer.adjust_for_ambient_noise(source, duration=0.5)
         if timeout is not None:
             print("\nListening")
         try:
@@ -29,7 +30,7 @@ def listen(recognizer, microphone, timeout=None, phrase_time_limit=None, show_te
         except sr.WaitTimeoutError:
             return "TIMEOUT"
     try:
-        text = recognizer.recognize_whisper(audio, model="tiny.en")
+        text = recognizer.recognize_whisper(audio, model="tiny.en") #tiny.en (smallest), small.en (small)
         if text.strip() and show_text:
             print(f"Recognized: {text}")
         return text
@@ -104,6 +105,7 @@ def background_api_stream(user_input, req_id):
                         continue  # Skip processing this chunk
                     if re.search(r'[.!?]\s+', buffer):  # Check for sentence-ending punctuation
                         cleaned_sentence = buffer.strip()
+                        cleaned_sentence = re.sub(r'[*#_~`\\]', '', cleaned_sentence)  # Remove markdown and special characters
                         if cleaned_sentence:
                             audio_queue.put((req_id, cleaned_sentence))  # Send the complete sentence to the audio queue
                         buffer = ""  # Clear the buffer after sending
