@@ -20,7 +20,7 @@ TONE & PERSONALITY:
 - Style: Ruthlessly concise. Answer directly. Speak as if every word is a premium resource.
 
 TOOL PROTOCOL:
-1. DYNAMIC SCANNING: You are provided with a dynamic list of tools. Each tool has a unique name and description. You MUST scan this list for every single request.
+1. DYNAMIC SCANNING: You are provided with a dynamic list of tools. Each tool has a unique name and description. You MUST scan this list for every single request, but you may not always need to use a tool.
 2. MANDATORY EXECUTION: Use a tool ONLY for data you cannot know (current time, local files, web searches, specific user records, real time data, weather etc.).
 3. SILENT OPERATION: NEVER announce that you are using a tool or "checking" something. Execute the tool in the background and weave the results naturally into your response as your own knowledge.
 4. ARGUMENT EXTRACTION: Extract all required parameters and variables accurately from the user's request to fulfill tool calls.
@@ -113,10 +113,7 @@ async def donny_prompt(request: ChatRequest):
                         full_text += token
                         yield token
             return StreamingResponse(stream_after_toolcall(), media_type="text/plain")
-               
-            
-            
-            
+                   
         # Save Donny's final verbal response to history so he remembers it
         chat_history.append(response['message'])
 
