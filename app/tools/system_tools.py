@@ -29,9 +29,9 @@ def get_system_health():
         disk_free_gb = round(disk.free / (1024 ** 3), 1)
 
         return {
-            "cpu_usage": f"{cpu_usage}%",
-            "ram_usage": f"{ram_usage}% ({ram_used_gb}GB / {ram_total_gb}GB)",
-            "c_drive_space_remaining": f"{disk_free_gb} GB free",
+            "cpu_usage": f"{cpu_usage}%,",
+            "ram_usage": f"{ram_usage}% ({ram_used_gb} Gigabytes / {ram_total_gb} Gigabytes)",
+            "c_drive_space_remaining": f"{disk_free_gb} Gigabytes free",
             "overall_status": "Healthy" if cpu_usage < 80 and ram_usage < 85 else "Under Heavy Load"
         }
     except Exception as e:
@@ -44,7 +44,7 @@ def run_speedtest():
     """
     REQUIRED TOOL for checking internet speed.
     Call this tool whenever the user asks about ping, download speed, upload speed, or connection status.
-    Do NOT use any other tool for internet checks.
+    Do NOT use this tool unless explicitly asked.
     """
     try:
         st = speedtest.Speedtest()

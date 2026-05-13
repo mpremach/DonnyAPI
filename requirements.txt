@@ -11,3 +11,8 @@ speechrecognition
 openai-whisper 
 soundfile
 pyaudio
+langgraph
+langchain-community
+langchain-ollama
+langchain-groq
+ddgs
